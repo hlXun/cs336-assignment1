@@ -559,7 +559,9 @@ def get_tokenizer(
     Returns:
         A BPE tokenizer that uses the provided vocab, merges, and special tokens.
     """
-    raise NotImplementedError
+    from cs336_basics.tokenizer import Tokenizer
+    tokenizer = Tokenizer(vocab, merges, special_tokens)
+    return tokenizer
 
 
 def run_train_bpe(
@@ -589,4 +591,26 @@ def run_train_bpe(
                 representing that <token1> was merged with <token2>.
                 Merges are ordered by order of creation.
     """
-    raise NotImplementedError
+    """
+    给定输入语料库的路径，训练一个 BPE 分词器，并输出其词表和合并规则。
+
+    参数：
+        input_path (str | os.PathLike): 指向 BPE 分词器训练数据的路径。
+        vocab_size (int): 分词器词表中的总项数（包括特殊 token）。
+        special_tokens (list[str]): 要添加到分词器词表中的字符串特殊 token 列表。
+            这些字符串永远不会被拆分成多个 token，并且始终会作为一个单独的 token 保留。
+            如果这些特殊 token 出现在 `input_path` 中，它们会被当作任何其他普通字符串一样处理。
+
+    返回：
+        tuple[dict[int, bytes], list[tuple[bytes, bytes]]]:
+            vocab:
+                训练好的分词器词表，是一个从 int（词表中的 token ID）到 bytes（token 字节）
+                的映射。
+            merges:
+                BPE 合并规则。每个列表项是一个字节元组 (<token1>, <token2>)，
+                表示 <token1> 与 <token2> 被合并。
+                合并按创建顺序排列。
+    """
+    from cs336_basics.bpe import train_bpe
+    vocab, merge = train_bpe(input_path, vocab_size, special_tokens)
+    return vocab, merge

@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import math
 from einops import einsum, rearrange
 
 class RotaryPositionalEmbedding(nn.Module):
@@ -17,12 +16,11 @@ class RotaryPositionalEmbedding(nn.Module):
         self.max_seq_len = max_seq_len
         self.device = device
         
-        R = torch.empty(max_seq_len, d_k // 2, device=device) # [max_seq_len, d_k // 2]
-        for i in range(max_seq_len):
-            for k in range(d_k // 2):
-                R[i][k] = i / math.pow(theta, (2 * k) / d_k)
-        self.register_buffer("R_cos", torch.cos(R))
-        self.register_buffer("R_sin", torch.sin(R))
+        pos = torch.arange(0, max_seq_len, device=device) # [max_seq_len]
+        freq = 1.0 / (self.theta ** (torch.arange(0, self.d_k, 2, device=device).float() / d_k)) # [d_k // 2]
+        R = einsum(pos, freq, "pos, freq -> pos freq") # [max_seq_len, d_k // 2]
+        self.register_buffer("R_sin", torch.sin(R), persistent=False)
+        self.register_buffer("R_cos", torch.cos(R), persistent=False)
         
     def forward(
         self,

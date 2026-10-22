@@ -27,11 +27,14 @@ class RotaryPositionalEmbedding(nn.Module):
         x: torch.Tensor,
         token_positions: torch.Tensor,
     ) -> torch.Tensor:
-        g = rearrange(x, "... (groups two) -> ... groups two", two=2)
+        origin_dtype = x.dtype
+        x_f = x.float()
+        g = rearrange(x_f, "... (groups two) -> ... groups two", two=2)
         r_cos = self.R_cos[token_positions] # [..., seq_len, d_k // 2]
         r_sin = self.R_sin[token_positions] # [..., seq_len, d_k // 2]
         x1, x2 = g[..., 0], g[..., 1]
         out = torch.stack([x1 * r_cos - x2 * r_sin, x1 * r_sin + x2 * r_cos], dim=-1)
         out = rearrange(out, "... groups two -> ... (groups two)", two=2)
+        out = out.to(dtype=origin_dtype)
         return out
             

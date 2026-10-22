@@ -12,15 +12,17 @@ class Multihead_SelfAttention_with_RoPE(nn.Module):
         num_heads: int,
         max_seq_len: int, 
         theta: float,
+        device: torch.device | None = None,
+        dtype: torch.dtype | None = None,
     ):
         super().__init__()
         self.d_model = d_model
         self.num_heads = num_heads
-        self.q_proj = Linear(d_model, d_model)
-        self.k_proj = Linear(d_model, d_model)
-        self.v_proj = Linear(d_model, d_model)
-        self.o_proj = Linear(d_model, d_model)
-        self.RoPE = RotaryPositionalEmbedding(theta, d_model // num_heads, max_seq_len)
+        self.q_proj = Linear(d_model, d_model, device=device, dtype=dtype)
+        self.k_proj = Linear(d_model, d_model, device=device, dtype=dtype)
+        self.v_proj = Linear(d_model, d_model, device=device, dtype=dtype)
+        self.o_proj = Linear(d_model, d_model, device=device, dtype=dtype)
+        self.RoPE = RotaryPositionalEmbedding(theta, d_model // num_heads, max_seq_len, device=device)
         
     def forward(
         self,

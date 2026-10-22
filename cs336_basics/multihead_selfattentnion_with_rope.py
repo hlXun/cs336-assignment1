@@ -16,24 +16,31 @@ class Multihead_SelfAttention_with_RoPE(nn.Module):
         super().__init__()
         self.d_model = d_model
         self.num_heads = num_heads
-        self.qkv_proj = Linear(d_model, 3 * d_model)
+        self.q_proj = Linear(d_model, d_model)
+        self.k_proj = Linear(d_model, d_model)
+        self.v_proj = Linear(d_model, d_model)
         self.o_proj = Linear(d_model, d_model)
         self.RoPE = RotaryPositionalEmbedding(theta, d_model // num_heads, max_seq_len)
         
     def forward(
         self,
         x: torch.Tensor,
-        token_positions: torch.Tensor,
+        token_positions: torch.Tensor | None = None,
     ) -> torch.Tensor:
-        qkv = self.qkv_proj(x)
-        q, k, v = torch.split(qkv, [self.d_model] * 3, dim=-1)
+        q = self.q_proj(x)
+        k = self.k_proj(x)
+        v = self.v_proj(x)
         
         q = rearrange(q, "... seq_len (num_heads d_k) -> ... num_heads seq_len d_k", num_heads=self.num_heads)
         k = rearrange(k, "... seq_len (num_heads d_k) -> ... num_heads seq_len d_k", num_heads=self.num_heads)
         v = rearrange(v, "... seq_len (num_heads d_v) -> ... num_heads seq_len d_v", num_heads=self.num_heads)
         
-        q = self.RoPE(q, token_positions)
-        k = self.RoPE(k, token_positions)
+        positions = token_positions
+        if token_positions is None:
+                positions = torch.arange(q.shape[-2], dtype=torch.long, device=q.device)
+        positions = positions.unsqueeze(-2)
+        q = self.RoPE(q, positions)
+        k = self.RoPE(k, positions)
         
         mask = torch.ones(q.shape[-2], q.shape[-2], dtype=torch.bool, device=q.device)
         mask = torch.tril(mask, diagonal=0)

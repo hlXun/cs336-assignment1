@@ -208,7 +208,9 @@ def run_multihead_self_attention_with_rope(
     attention = Multihead_SelfAttention_with_RoPE(d_model, num_heads, max_seq_len, theta)
     attention.load_state_dict(
         {
-            "qkv_proj.W": torch.cat([q_proj_weight, k_proj_weight, v_proj_weight], dim=0),
+            "q_proj.W": q_proj_weight,
+            "k_proj.W": k_proj_weight,
+            "v_proj.W": v_proj_weight,
             "o_proj.W": o_proj_weight,
         }
     )

@@ -711,6 +711,6 @@ def run_train_bpe(
                 表示 <token1> 与 <token2> 被合并。
                 合并按创建顺序排列。
     """
-    from cs336_basics.bpe import train_bpe
+    from cs336_basics.bpe_improved import train_bpe
     vocab, merge = train_bpe(input_path, vocab_size, special_tokens)
     return vocab, merge

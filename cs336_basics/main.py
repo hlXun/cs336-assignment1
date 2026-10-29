@@ -12,7 +12,7 @@ if __name__ == '__main__':
         vocab = vm['vocab']
         merges = vm['merges']
     tokenizer = Tokenizer(vocab=vocab, merges=merges, special_tokens=['<|endoftext|>'])
-    prompt = input()
+    prompt = input('请输入文本：')
     prompt = tokenizer.encode(prompt)
     prompt = torch.tensor(prompt, dtype=torch.long, device=device).unsqueeze(0) # [1, context_length]
     
